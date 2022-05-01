@@ -16,7 +16,7 @@ CREATE TABLE library.authors (
 );
 
 CREATE TABLE library.books (
-	isbn BIGINT NOT NULL,
+	isbn VARCHAR(13) NOT NULL,
     baid INT NOT NULL,
     pub_date INT,
     stock INT NOT NULL,
@@ -24,13 +24,12 @@ CREATE TABLE library.books (
     title VARCHAR(80) NOT NULL,
     PRIMARY KEY (isbn),
     FOREIGN KEY (baid) REFERENCES library.authors (aid),
-    CONSTRAINT CHECK (stock >= 0),
-    CONSTRAINT CHECK (999999999 < isbn < 10000000000 OR 999999999999 < isbn < 10000000000000)
+    CONSTRAINT CHECK (stock >= 0)
 );
 
 CREATE TABLE library.checkout (
 	c_uid INT NOT NULL,
-    c_isbn BIGINT NOT NULL,
+    c_isbn VARCHAR(13) NOT NULL,
     due_date DATE NOT NULL,
     PRIMARY KEY (c_uid, c_isbn),
     FOREIGN KEY (c_uid) REFERENCES library.users (uid),
