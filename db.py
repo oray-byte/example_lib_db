@@ -1,31 +1,17 @@
+# MySQL API
 import mysql.connector
 
-cnx = mysql.connector.connect(user='root', password='E@stW00D6576', host='localhost', database='library')
+cnx = mysql.connector.connect(user='root', password='[ENTER PASSWORD]', host='localhost', database='library')
 cursor = cnx.cursor()
+
+# SQL Commands are stored as dictionary values where the name of the query is the key and the query logic is the data
 QUERIES = {}
-TABLES = {}
-INSERT = {}
-# Dictionary that contains CREATE TABLE instructions
-QUERIES['test'] = (
-    "SELECT `fname`, `lname`"
-    "FROM users"
-    )
 
-TABLES['users'] = (
-    "CREATE TABLE `users`("
-    "  uid INT NOT NULL,"
-    "  fname VARCHAR(25),"
-    "  lname VARCHAR(25)"
-    ");"
-)
+def menu():
+    pass
 
-INSERT['john'] = (
-    "INSERT INTO `users` VALUES(1, `John`, `Smith`);"
-    "INSERT INTO `users` VALUES(2, `Jim`, `Rob`);"
-    "INSERT INTO `users` VALUES(3, `Jimmy`, `John`);"
-)
 
-cursor.execute(INSERT['john'])
-cursor.execute(QUERIES["test"])
-cursor.close()
-cnx.close()
+if __name__ == "__main__":
+    cursor.execute(QUERIES["test"])
+    cursor.close()
+    cnx.close()
