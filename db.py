@@ -1,10 +1,13 @@
 # MySQL API
 # MySQL API Documentation: https://dev.mysql.com/doc/connector-python/en/
+from time import sleep
 import mysql.connector
+import os
 
-print("Connecting to database...\n")
 # Debugging purposes
 connecting = False
+
+print("Connecting to database...\n")
 
 # Method to connect to MySQL server
 # See https://dev.mysql.com/doc/connector-python/en/connector-python-connectargs.html for list of arguements
@@ -31,20 +34,55 @@ if connecting:
 if connecting:
     cursor = cnx.cursor()
 
+# Clears console
+def clearConsole():
+    if (os.name == "nt"):
+        os.system("cls")
+    else:
+        os.system("clear")
+
 # Exits the program. Option # 9
 def onExit():
+    clearConsole()
     if (connecting):
         cursor.close()
         cnx.close()
 
     print('Quiting program...')
     print('Thanks for using Forbidden Cucumber Knowledge software! Good bye!')
+    sleep(2.5)
     exit()
+
+def optionONE():
+    clearConsole()
+    # search a computer with its computerID and check and show if its available
+    print('\t\t**** Check if particular computer is available ****\n')
+    print('To check if a computer is available, please enter computerID')
+    computerID = input('enter computerID: ')                # enter 'q' to go back to menu
+
+    print('searching for computerID: ' + str(computerID))
+
+    #SQL query here, show | computerID | computer.location | computer.availabilitySTATUS??|
+    outerQuery = ("SELECT C.comp_id, C.comp_loc"
+                  "FROM computers AS C"
+                  "WHERE C.comp_id NOT IN (SELECT CU.c_comp_id FROM computeruse AS CU)")
+    print("press 'enter' to go back to menu")
+    
+def optionTWO():
+    clearConsole()
+    print('\t\t**** List of available computers ****')
+
+    #**SQL QUERY of the list of available computers, show computerID and location**
+
+
+    print("\nPress 'enter' to go back to menu")
+
+
 
 # Handles input by assigning options to functions
 # Must define the functions before this
 input_handler = {
-    1 : "do option 1", # TODO: Inplement options 
+    1 : optionONE, # TODO: Inplement options 
     2 : "do option 2",
     3 : "do option 3",
     4 : "do option 4",
@@ -56,7 +94,8 @@ input_handler = {
 }
 
 if __name__ == "__main__":
-    while True: 
+    while True:
+        clearConsole() 
         # Useful documenation about Python string formatting: https://docs.python.org/3/library/string.html and https://www.w3schools.com/python/ref_string_format.asp
         print("-"*60)
         print("| {:^56} |".format("**** Library Menu ****"))
