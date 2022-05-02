@@ -17,6 +17,8 @@ INSERT INTO library.computeruse VALUES (1, 1);
 INSERT INTO library.computeruse VALUES (2, 2);
 INSERT INTO library.roomuse VALUES (2, 100);
 INSERT INTO library.roomuse VALUES (1, 200);
+INSERT INTO library.checkout VALUES (1, "9780262046305", str_to_date('5/28/2022', '%m/%d/%Y'));
+INSERT INTO library.checkout VALUES (1, "0400307299532", str_to_date('9/14/2022', '%m/%d/%Y'));
 
 SELECT * FROM library.books;
 SELECT * FROM library.authors;

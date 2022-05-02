@@ -2,6 +2,7 @@
 # MySQL API Documentation: https://dev.mysql.com/doc/connector-python/en/
 from time import sleep
 from getpass import getpass
+from datetime import datetime
 import mysql.connector
 import os
 
@@ -46,16 +47,6 @@ def clearConsole():
         os.system("cls")
     else:
         os.system("clear")
-
-# Exits the program. Option # 9
-def onExit():
-    clearConsole()
-    if connecting:
-        cursor.close()
-        cnx.close()
-    print('Quiting program...')
-    print('Thanks for using Forbidden Cucumber Knowledge software! Good bye!')
-    exit()
 
 def optionONE():
     # Search a computer with its computerID and check and show if its available
@@ -199,23 +190,63 @@ def optionSIX():
     if (len(rows) == 0):
         print(formatLeft.format("We could not find a book with ISBN: {id}".format(id=bookISBN)))
     else:
-        # Change when not tired
-        for (title, fname, lname, isbn, stock, location) in rows:
-            print(formatLeft.format("{t}, {name}, {id}, {s}, {l}".format(t=title, name=(lname + ", " + fname), id=isbn, s=stock, l=location)))
+        print(formatCenter.format("**** Book Information ****"))
+        print(formatLeft.format("Title: {tit}".format(tit=rows[0][0])))
+        print(formatLeft.format("Author name: {name}").format(name=(rows[0][2] + ", " + rows[0][1])))
+        print(formatLeft.format("ISBN: {id}".format(id=rows[0][3])))
+        print(formatLeft.format("Book stock: {stock}".format(stock=rows[0][4])))
+        print(formatLeft.format("Book location: {loc}".format(loc=rows[0][5])))
+        
     
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
-def optionSEVEN(): #SKIP FOR NOW
+def optionSEVEN():
+    queryList = []
     print(formatCenter.format('**** Checking if book is due ****'))
     print(formatLeft.format('To check if a book is due, please enter in userID.'))
+    while True:
+        try:
+            userID = int(getpass(prompt=(formatLeft.format("Enter computer ID: "))))
+        except ValueError as err:
+            print(formatLeft.format("Oops! That was not a valid number. Please try again..."))
+            continue
+        break
+    
+    queryList.append(userID)
+    outerQuery = (
+        "SELECT CO.due_date, B.title"
+        "FROM user AS U, checkout AS CO, books as B "
+        "WHERE U.uid = CO.c_uid and U.uid = %s and CO.c_isbn = B.isbn"
+        )
+    cursor.execute(outerQuery, queryList)
+    rows = cursor.fetchall()
+    
+    if (len(rows) == 0):
+        print(formatLeft.format("User of ID: {id} has no checkouts".format(id=userID)))
+    else:
+        for (due_date, title) in rows:
+            print(formatLeft.format("{tit} due date is {due}".format(tit=title, due=due_date)))
+            
+    input(formatLeft.format("Press 'enter' to go back to menu"))
+    print(("-" * displayLength) + "\n")
+    
+    
 
 def optionEIGHT():
     print(formatCenter.format('**** Search up book ****'))
     print(formatLeft.format('To look for a book, please insert some info that relates to the searching book.'))
     print(formatLeft.format('You can look up a book by its book-title, book-author, book-ISBN(13-digit), AND OR book-Publication Date.'))
 
-        
+def optionNINE():
+    clearConsole()
+    if connecting:
+        cursor.close()
+        cnx.close()
+    print('Quiting program...')
+    print('Thanks for using Forbidden Cucumber Knowledge software! Good bye!')
+    exit()
+
 # Handles input by assigning options to functions
 # Must define the functions before this
 input_handler = {
@@ -227,7 +258,7 @@ input_handler = {
     6 : optionSIX, 
     7 : "do option 7",
     8 : "do option 8",
-    9 : onExit
+    9 : optionNINE
 }
 
 if __name__ == "__main__":
