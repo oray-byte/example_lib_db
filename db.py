@@ -6,8 +6,6 @@ from datetime import datetime
 import mysql.connector
 import os
 
-from numpy import outer
-
 # Debugging purposes
 connecting = True
 
@@ -48,8 +46,14 @@ def clearConsole():
     else:
         os.system("clear")
 
+"""
+    Name: optionONE()
+    Description: Handles functionality for option one
+    Params: None
+    Scope: Public 
+    Summary: Search a computer with its commputerID and print if it is available or not
+"""
 def optionONE():
-    # Search a computer with its computerID and check and show if its available
     print("-" * displayLength)
     print(formatCenter.format("**** Check if particular computer is available ****"))
     print(formatLeft.format("To check if a computer is available, please the computer's ID"))
@@ -82,9 +86,15 @@ def optionONE():
     print(formatLeft.format("Computer {id} is unavailable.".format(id=computerID)))        
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
-    
+
+"""
+    Name: optionTWO()
+    Description: Handles functionality for option two
+    Params: None
+    Scope: Public 
+    Summary: Print a list of all available computers in the library
+"""  
 def optionTWO():
-    # show the list of available computers
     print("-" * displayLength)
     print(formatCenter.format('**** List of available computers ****'))
 
@@ -107,6 +117,13 @@ def optionTWO():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
+"""
+    Name: optionTHREE()
+    Description: Handles functionality for option three
+    Params: None
+    Scope: Public 
+    Summary: Print a list of all available apps on computers
+"""  
 def optionTHREE():
     # show list of available apps 
     print("-" * displayLength)
@@ -127,8 +144,14 @@ def optionTHREE():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
+"""
+    Name: optionFOUR()
+    Description: Handles functionality for option four
+    Params: None
+    Scope: Public 
+    Summary:Search a room with its roomNumber and print if it is available or not
+"""  
 def optionFOUR():
-    # Check if a selected room is available
     print("-" * displayLength)
     print(formatCenter.format('**** Checking if a particular room is available ****'))
     print(formatLeft.format('To check if a room is available, please enter room number.'))
@@ -154,9 +177,15 @@ def optionFOUR():
     print(formatLeft.format("Room {id} is unavailable.".format(id=roomNumber)))        
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
-    
+
+"""
+    Name: optionFIVE()
+    Description: Handles functionality for option five
+    Params: None
+    Scope: Public 
+    Summary: Print a list of all available roosm in the library
+"""  
 def optionFIVE():
-    # Show list of available rooms
     print("-" * displayLength)
     print(formatCenter.format('**** List of available rooms ****'))
     
@@ -178,8 +207,14 @@ def optionFIVE():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
+"""
+    Name: optionSIX()
+    Description: Handles functionality for option six
+    Params: None
+    Scope: Public 
+    Summary: Checks to see if a book is in stock
+"""  
 def optionSIX():
-    # Check if a book is in stock or not
     queryList = []
     print("-" * displayLength)
     print(formatCenter.format('**** Checking if book is in stock ****'))
@@ -199,14 +234,14 @@ def optionSIX():
     outerQuery = (
             "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location "
             "FROM books AS B, authors AS A "
-            "WHERE B.baid = A.aid and %s = B.isbn"
+            "WHERE B.baid = A.aid and %s = B.isbn and B.stock > 0"
             )
     
     cursor.execute(outerQuery, queryList)
     rows = cursor.fetchall()
     
     if (len(rows) == 0):
-        print(formatLeft.format("We could not find a book with ISBN: {id}".format(id=bookISBN)))
+        print(formatLeft.format("We could not find a book with ISBN: {id} that's in stock".format(id=bookISBN)))
     else:
         print(formatCenter.format("**** Book Information ****"))
         print(formatLeft.format("Title: {tit}".format(tit=rows[0][0])))
@@ -219,6 +254,13 @@ def optionSIX():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
+"""
+    Name: optionSEVEN()
+    Description: Handles functionality for option seven
+    Params: None
+    Scope: Public 
+    Summary: Using userID, checks to see when each checked out book is due
+"""  
 def optionSEVEN():
     queryList = []
     print(formatCenter.format('**** Checking if book is due ****'))
@@ -247,16 +289,22 @@ def optionSEVEN():
             print(formatLeft.format("{tit} due date is {due}".format(tit=title, due=due_date)))
             
     input(formatLeft.format("Press 'enter' to go back to menu"))
-    print(("-" * displayLength) + "\n")
-    
-    
+    print(("-" * displayLength) + "\n")   
 
+"""
+    Name: optionEIGHT()
+    Description: Handles functionality for option eight
+    Params: None
+    Scope: Public 
+    Summary: Search for a book using different criteria
+"""  
 def optionEIGHT():
     # Come back and tidy. Also, comment
     queryList = []
     outerQuery = ("")
     # Used if user is looking up by date
     temp = None
+    print("-" * displayLength)
     print(formatCenter.format('**** Search for book ****'))
     print(formatLeft.format("1) Search by title"))
     print(formatLeft.format("2) Search by author"))
@@ -293,14 +341,13 @@ def optionEIGHT():
     elif (menuChoice == 3):
         temp = getpass(prompt=formatLeft.format("Please enter the publication date of the book of which you are looking for: "))
         queryList.append(temp)
-        print(formatLeft.format("1) Greater than {date}".format(queryList[0])))
-        print(formatLeft.format("2) Less than {date}".format(queryList[0])))
-        menuChoice = formatLeft.format(getpass(prompt="Please choose an option: "))
+        print(formatLeft.format("1) Greater than {date}".format(date=queryList[0])))
+        print(formatLeft.format("2) Less than {date}".format(date=queryList[0])))
         while True:
             try:
                 menuChoice = int(getpass(formatLeft.format("Please enter an option: ")))
             except ValueError as err:
-                print("Oops! That was not a valid number. Please try again...")
+                print(formatLeft.format("Oops! That was not a valid number. Please try again..."))
                 continue
             
             if (menuChoice < 1 or menuChoice > 2):
@@ -323,22 +370,81 @@ def optionEIGHT():
     cursor.execute(outerQuery, queryList)
     rows = cursor.fetchall()
     
+    print(formatLeft.format(" "))
+    print(formatCenter.format("**** Book Information ****"))
     if (len(rows) == 0):
         print(formatLeft.format("We could not find the book you were looking for"))
-    else:
-        print(formatCenter.format("**** Book Information ****"))
+    elif (len(rows) == 1):
         print(formatLeft.format("Title: {tit}".format(tit=rows[0][0])))
-        print(formatLeft.format("Author name: {name}").format(name=(rows[0][2] + ", " + rows[0][1])))
+        print(formatLeft.format("Author name: {ln}, {fn}".format(ln=rows[0][2], fn=rows[0][1])))
         print(formatLeft.format("ISBN: {id}".format(id=rows[0][3])))
         print(formatLeft.format("Publication date: {date}".format(date=rows[0][6])))
         print(formatLeft.format("Book stock: {stock}".format(stock=rows[0][4])))
         print(formatLeft.format("Book location: {loc}".format(loc=rows[0][5])))
+        print(formatLeft.format(" "))
+    else:
+        for (title, fname, lname, isbn, stock, location, pub_date) in rows:
+            print(formatLeft.format("Title: {tit}".format(tit=title)))
+            print(formatLeft.format("Author name: {ln}, {fn}".format(ln=lname, fn=fname)))
+            print(formatLeft.format("ISBN: {id}".format(id=isbn)))
+            print(formatLeft.format("Publication date: {date}".format(date=pub_date)))
+            print(formatLeft.format("Book stock: {stock}".format(stock=stock)))
+            print(formatLeft.format("Book location: {loc}".format(loc=location)))
+            print(formatLeft.format(" "))
+            
         
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
-    
+
+"""
+    Name: optionNINE()
+    Description: Handles functionality for option nine
+    Params: None
+    Scope: Public 
+    Summary: Using userID and ISBN, allows user to check out a book by adding tuple from checkout table
+"""  
 def optionNINE():
-    # add user to database, ask for first and last name, phone number.
+    pass
+
+"""
+    Name: optionTEN()
+    Description: Handles functionality for option ten
+    Params: None
+    Scope: Public 
+    Summary: Using userID and ISBN, allows user to return a book by deleting tuple from checkout table
+"""  
+def optionTEN():
+    pass
+
+"""
+    Name: optionELEVEN()
+    Description: Handles functionality for option eleven
+    Params: None
+    Scope: Public 
+    Summary: Using userID and roomNumber, allows user to reserve a room that is not reserved
+"""  
+def optionELEVEN():
+    pass
+
+"""
+    Name: optionTWELVE()
+    Description: Handles functionality for option twelve
+    Params: None
+    Scope: Public 
+    Summary: Using userID and roomNumber, allows user to end a reservation
+"""  
+def optionTWELVE():
+    pass
+
+"""
+    Name: optionTHIRTEEN()
+    Description: Handles functionality for option thirteen
+    Params: None
+    Scope: Public 
+    Summary: Using userID and roomNumber, allows user to reserve a room if the room is not reserved
+"""  
+def optionTHIRTEEN():
+    print("-" * displayLength)
     print(formatCenter.format('**** Adding user ****'))
     firstname = getpass(prompt=formatLeft.format("Enter first name: "))
     lastname = getpass(prompt=formatLeft.format("Enter last name: "))
@@ -359,9 +465,16 @@ def optionNINE():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
-def optionTEN():
-    # delete user from database
+"""
+    Name: optionFOURTEEN()
+    Description: Handles functionality for option fourteen
+    Params: None
+    Scope: Public 
+    Summary: Allows user to delete another user by entering uid
+"""  
+def optionFOURTEEN():
     queryList = []
+    print("-" * displayLength)
     print(formatCenter.format('**** Deleting user ****'))
     uid = int(getpass(prompt=formatLeft.format("Enter userID: ")))
     queryList.append(uid)
@@ -377,8 +490,14 @@ def optionTEN():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
-def optionELEVEN():
-    # print list of users
+"""
+    Name: optionFIFTEEN()
+    Description: Handles functionality for option fifteen
+    Params: None
+    Scope: Public 
+    Summary: Prints a list of all users
+"""  
+def optionFIFTEEN():
     print("-" * displayLength)
     print(formatCenter.format('**** List of users ****'))
 
@@ -399,6 +518,35 @@ def optionELEVEN():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
+"""
+    Name: optionSIXTEEN()
+    Description: Handles functionality for option sixteen
+    Params: None
+    Scope: Public 
+    Summary: Allows user to add a new book into the library
+"""  
+def optionSIXTEEN():
+    pass
+
+"""
+    Name: optionSEVENTEEN()
+    Description: Handles functionality for option seventeen
+    Params: None
+    Scope: Public 
+    Summary: Allows user to remove all books from the library given an isbn
+"""  
+def optionSEVENTEEN():
+    pass
+
+"""
+    Name: optionEIGHTTEEN()
+    Description: Handles functionality for option eightteen
+    Params: None
+    Scope: Public 
+    Summary: Prints a list of all available books in the library
+"""  
+def optionEIGHTTEEN():
+    pass
 
 def optionQUIT():
     clearConsole()
@@ -412,7 +560,7 @@ def optionQUIT():
 # Handles input by assigning options to functions
 # Must define the functions before this
 input_handler = {
-    1 : optionONE, # TODO: Inplement options 
+    1 : optionONE,
     2 : optionTWO,
     3 : optionTHREE,
     4 : optionFOUR,
@@ -421,10 +569,16 @@ input_handler = {
     7 : optionSEVEN,
     8 : optionEIGHT,
     9 : optionNINE,
-    10 : optionTEN,
+    10: optionTEN,
     11 : optionELEVEN,
-    12 : optionQUIT
-
+    12 : optionTWELVE,
+    13 : optionTHIRTEEN,
+    14 : optionFOURTEEN,
+    15 : optionFIFTEEN,
+    16 : optionSIXTEEN,
+    17 : optionSEVENTEEN,
+    18 : optionEIGHTTEEN,
+    19 : optionQUIT
 }
 
 if __name__ == "__main__":
@@ -432,6 +586,7 @@ if __name__ == "__main__":
     while True:
         # clearConsole() 
         # Useful documenation about Python string formatting: https://docs.python.org/3/library/string.html and https://www.w3schools.com/python/ref_string_format.asp
+        # TODO: Reorganize the options to make sense, all the queries with queries, all additions with additions, etc...
         print("-" * displayLength)
         print(formatCenter.format("**** Library Menu ****"))
         print(formatLeft.format("1) Check if a particular computer is available"))
@@ -442,10 +597,21 @@ if __name__ == "__main__":
         print(formatLeft.format("6) Check if a book is in stock"))
         print(formatLeft.format("7) Check when book is due"))
         print(formatLeft.format("8) Search for book"))
-        print(formatLeft.format("9) Add user"))
-        print(formatLeft.format("10) Delete user"))
-        print(formatLeft.format("11) Print user list"))
-        print(formatLeft.format("12) Quit"))
+        print(formatLeft.format("9) Checkout book"))
+        print(formatLeft.format("10) Return book"))
+        print(formatLeft.format("11) Reserve room"))
+        print(formatLeft.format("12) End room reservation"))
+        print("-" * displayLength)
+        print(formatCenter.format("**** Manipulating users table ****"))
+        print(formatLeft.format("13) Add user"))
+        print(formatLeft.format("14) Delete user"))
+        print(formatLeft.format("15) Print user list"))
+        print("-" * displayLength)
+        print(formatCenter.format("**** Manipulating books table ****"))
+        print(formatLeft.format("16) Add book"))
+        print(formatLeft.format("17) Delete book"))
+        print(formatLeft.format("18) Print all available books"))
+        print(formatLeft.format("19) Quit"))
         print("-" * displayLength)
 
         # Error handling
@@ -455,7 +621,7 @@ if __name__ == "__main__":
             except ValueError as err:
                 print("Oops! That was not a valid number. Please try again...")
                 continue
-            if (menuChoice < 1 or menuChoice > 12):
+            if (menuChoice < 1 or menuChoice > 13):
                 print("Invalid option. Please try again...")
             else:
                 break
