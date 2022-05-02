@@ -6,12 +6,10 @@ from datetime import datetime
 import mysql.connector
 import os
 
-from numpy import disp
-
 # Debugging purposes
 connecting = True
 
-# 
+# For formatting output
 displayLength = 80
 formatCenter = "| {:^76} |"
 formatLeft = "| {:<76} |"
@@ -40,7 +38,7 @@ if connecting:
 # Visit https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor.html for full documentation
 if connecting:
     cursor = cnx.cursor()
-
+    
 # Clears console
 def clearConsole():
     if (os.name == "nt"):
@@ -107,7 +105,25 @@ def optionTWO():
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
 
-#def optionTHREE(): skip it for now
+def optionTHREE():
+    # show list of available apps 
+    print("-" * displayLength)
+    print(formatCenter.format('**** See all available computer apps****'))
+
+    #SQL query show list of available apps from all computers.
+    outerQuery = (
+                "SELECT * "
+                "FROM apps"
+                )
+    cursor.execute(outerQuery)
+    rows = cursor.fetchall()
+
+    # Print out all available apps
+    for (_aid, app_name) in rows:
+        print(formatLeft.format("Application name: {app}".format(app=app_name)))
+
+    input(formatLeft.format("Press 'enter' to go back to menu"))
+    print(("-" * displayLength) + "\n")
 
 def optionFOUR():
     # Check if a selected room is available
@@ -207,7 +223,7 @@ def optionSEVEN():
     print(formatLeft.format('To check if a book is due, please enter in userID.'))
     while True:
         try:
-            userID = int(getpass(prompt=(formatLeft.format("Enter computer ID: "))))
+            userID = int(getpass(prompt=(formatLeft.format("Enter user ID: "))))
         except ValueError as err:
             print(formatLeft.format("Oops! That was not a valid number. Please try again..."))
             continue
@@ -215,8 +231,8 @@ def optionSEVEN():
     
     queryList.append(userID)
     outerQuery = (
-        "SELECT CO.due_date, B.title"
-        "FROM user AS U, checkout AS CO, books as B "
+        "SELECT CO.due_date, B.title "
+        "FROM users AS U, checkout AS CO, books as B "
         "WHERE U.uid = CO.c_uid and U.uid = %s and CO.c_isbn = B.isbn"
         )
     cursor.execute(outerQuery, queryList)
@@ -234,9 +250,22 @@ def optionSEVEN():
     
 
 def optionEIGHT():
-    print(formatCenter.format('**** Search up book ****'))
-    print(formatLeft.format('To look for a book, please insert some info that relates to the searching book.'))
-    print(formatLeft.format('You can look up a book by its book-title, book-author, book-ISBN(13-digit), AND OR book-Publication Date.'))
+    outerQuery = ("")
+    print(formatCenter.format('**** Search for book ****'))
+    print(formatLeft.format("1) Search by title"))
+    print(formatLeft.format("2) Search by author"))
+    print(formatLeft.format("3) Search by date (year)"))
+    while True:
+        try:
+            menuChoice = int(input("Please enter an option: "))
+        except ValueError as err:
+            print("Oops! That was not a valid number. Please try again...")
+            continue
+        break
+    
+    
+    
+    
 
 def optionNINE():
     clearConsole()
@@ -252,11 +281,11 @@ def optionNINE():
 input_handler = {
     1 : optionONE, # TODO: Inplement options 
     2 : optionTWO,
-    3 : "do option 3",
+    3 : optionTHREE,
     4 : optionFOUR,
     5 : optionFIVE,
     6 : optionSIX, 
-    7 : "do option 7",
+    7 : optionSEVEN,
     8 : "do option 8",
     9 : optionNINE
 }

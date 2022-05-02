@@ -18,7 +18,7 @@ CREATE TABLE library.authors (
 CREATE TABLE library.books (
 	isbn VARCHAR(13) NOT NULL,
     baid INT NOT NULL,
-    pub_date INT,
+    pub_date INT NOT NULL,
     stock INT NOT NULL,
     location VARCHAR(80) NOT NULL,
     title VARCHAR(80) NOT NULL,
