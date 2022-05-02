@@ -69,3 +69,5 @@ INSERT INTO library.roomuse VALUES (2, 101);
 INSERT INTO library.roomuse VALUES (1, 203);
 INSERT INTO library.checkout VALUES (1, "9780262046305", str_to_date('5/28/2022', '%m/%d/%Y'));
 INSERT INTO library.checkout VALUES (1, "0400307299532", str_to_date('9/14/2022', '%m/%d/%Y'));
+
+SELECT * FROM users

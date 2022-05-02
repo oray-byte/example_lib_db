@@ -6,6 +6,8 @@ from datetime import datetime
 import mysql.connector
 import os
 
+from numpy import outer
+
 # Debugging purposes
 connecting = True
 
@@ -100,7 +102,7 @@ def optionTWO():
         # Print out all available computers
         for (comp_id, comp_loc) in rows:
             print(formatLeft.format("Computer {id} is available on floor {floor}".format(id=comp_id, floor=comp_loc)))
-            return
+
 
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
@@ -250,24 +252,155 @@ def optionSEVEN():
     
 
 def optionEIGHT():
+    # Come back and tidy. Also, comment
+    queryList = []
     outerQuery = ("")
+    # Used if user is looking up by date
+    temp = None
     print(formatCenter.format('**** Search for book ****'))
     print(formatLeft.format("1) Search by title"))
     print(formatLeft.format("2) Search by author"))
     print(formatLeft.format("3) Search by date (year)"))
     while True:
         try:
-            menuChoice = int(input("Please enter an option: "))
+            menuChoice = int(getpass(prompt=formatLeft.format("Please enter an option: ")))
         except ValueError as err:
-            print("Oops! That was not a valid number. Please try again...")
+            print(formatLeft.format("Oops! That was not a valid number. Please try again..."))
             continue
-        break
-    
-    
-    
-    
+        
+        if (menuChoice < 1 or menuChoice > 3):
+            print("Invalid option. Please try again...")
+        else:
+            break
 
+    if (menuChoice == 1):
+        temp = getpass(prompt=formatLeft.format("Please enter the title of the book you are looking for: "))
+        queryList.append(temp)
+        outerQuery = (
+                    "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
+                    "FROM books AS B, authors AS A "
+                    "WHERE B.baid = A.aid and %s = B.title and B.stock > 0"
+                    )
+    elif (menuChoice == 2):
+        temp = getpass(prompt=formatLeft.format("Please enter the author of the book of which you are looking for: "))
+        queryList.append(temp.split(' ')[0])
+        queryList.append(temp.split(' ')[1])
+        outerQuery = (
+                    "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
+                    "FROM books AS B, authors AS A "
+                    "WHERE B.baid = A.aid and %s = A.afname and %s = A.alname and B.stock > 0"
+                    )
+    elif (menuChoice == 3):
+        temp = getpass(prompt=formatLeft.format("Please enter the publication date of the book of which you are looking for: "))
+        queryList.append(temp)
+        print(formatLeft.format("1) Greater than {date}".format(queryList[0])))
+        print(formatLeft.format("2) Less than {date}".format(queryList[0])))
+        menuChoice = formatLeft.format(getpass(prompt="Please choose an option: "))
+        while True:
+            try:
+                menuChoice = int(getpass(formatLeft.format("Please enter an option: ")))
+            except ValueError as err:
+                print("Oops! That was not a valid number. Please try again...")
+                continue
+            
+            if (menuChoice < 1 or menuChoice > 2):
+                print(formatLeft.format("Invalid option. Please try again..."))
+            else:
+                break
+        if (menuChoice == 1):
+            outerQuery = (
+                        "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
+                        "FROM books AS B, authors AS A "
+                        "WHERE B.baid = A.aid and B.pub_date >= %s and B.stock > 0"
+                        )
+        elif (menuChoice == 2):
+            outerQuery = (
+                        "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
+                        "FROM books AS B, authors AS A "
+                        "WHERE B.baid = A.aid and B.pub_date < %s and B.stock > 0"
+                        )
+            
+    cursor.execute(outerQuery, queryList)
+    rows = cursor.fetchall()
+    
+    if (len(rows) == 0):
+        print(formatLeft.format("We could not find the book you were looking for"))
+    else:
+        print(formatCenter.format("**** Book Information ****"))
+        print(formatLeft.format("Title: {tit}".format(tit=rows[0][0])))
+        print(formatLeft.format("Author name: {name}").format(name=(rows[0][2] + ", " + rows[0][1])))
+        print(formatLeft.format("ISBN: {id}".format(id=rows[0][3])))
+        print(formatLeft.format("Publication date: {date}".format(date=rows[0][6])))
+        print(formatLeft.format("Book stock: {stock}".format(stock=rows[0][4])))
+        print(formatLeft.format("Book location: {loc}".format(loc=rows[0][5])))
+        
+    input(formatLeft.format("Press 'enter' to go back to menu"))
+    print(("-" * displayLength) + "\n")
+    
 def optionNINE():
+    # add user to database, ask for first and last name, phone number.
+    print(formatCenter.format('**** Adding user ****'))
+    firstname = getpass(prompt=formatLeft.format("Enter first name: "))
+    lastname = getpass(prompt=formatLeft.format("Enter last name: "))
+    phoneNUM = int(getpass(prompt=formatLeft.format("Enter phone number: ")))
+
+    #SQL insertion of fname, lname and phone number
+    add_user = ("INSERT INTO users "
+               "(fname, lname, phone) "
+               "VALUES (%s, %s, %s)")
+    data_user = (firstname, lastname , phoneNUM)
+
+    # Insert new user
+    cursor.execute(add_user, data_user)
+    uid = cursor.lastrowid #used for auto increment column
+     # Make sure data is committed to the database
+    cnx.commit()
+    
+    input(formatLeft.format("Press 'enter' to go back to menu"))
+    print(("-" * displayLength) + "\n")
+
+def optionTEN():
+    # delete user from database
+    queryList = []
+    print(formatCenter.format('**** Deleting user ****'))
+    uid = int(getpass(prompt=formatLeft.format("Enter userID: ")))
+    queryList.append(uid)
+    
+    delete_user = (
+                "DELETE FROM users "
+                "WHERE uid = %s "
+                )
+    # delete user
+    cursor.execute(delete_user, queryList)
+    #cnx.commit()
+    
+    input(formatLeft.format("Press 'enter' to go back to menu"))
+    print(("-" * displayLength) + "\n")
+
+def optionELEVEN():
+    # print list of users
+    print("-" * displayLength)
+    print(formatCenter.format('**** List of users ****'))
+
+    #**SQL QUERY of the list of users**
+    outerQuery = ("SELECT * "
+                  "FROM users")
+    cursor.execute(outerQuery)
+    rows = cursor.fetchall()
+
+    # Check to see if there are no returned rows
+    if (len(rows) == 0):
+        print(formatLeft.format("There are no users"))
+    else:
+        # Print out all users
+        for (uid, fname, lname, phone) in rows:
+            print(formatLeft.format("User ID: {id}, Name: {first} {last}, Phone Number: {phonenumber}".format(id=uid, first=fname, last=lname, phonenumber=phone)))
+
+    input(formatLeft.format("Press 'enter' to go back to menu"))
+    print(("-" * displayLength) + "\n")
+
+
+def optionQUIT():
     clearConsole()
     if connecting:
         cursor.close()
@@ -286,8 +419,12 @@ input_handler = {
     5 : optionFIVE,
     6 : optionSIX, 
     7 : optionSEVEN,
-    8 : "do option 8",
-    9 : optionNINE
+    8 : optionEIGHT,
+    9 : optionNINE,
+    10 : optionTEN,
+    11 : optionELEVEN,
+    12 : optionQUIT
+
 }
 
 if __name__ == "__main__":
@@ -305,19 +442,20 @@ if __name__ == "__main__":
         print(formatLeft.format("6) Check if a book is in stock"))
         print(formatLeft.format("7) Check when book is due"))
         print(formatLeft.format("8) Search for book"))
-        print(formatLeft.format("9) Quit"))
+        print(formatLeft.format("9) Add user"))
+        print(formatLeft.format("10) Delete user"))
+        print(formatLeft.format("11) Print user list"))
+        print(formatLeft.format("12) Quit"))
         print("-" * displayLength)
 
         # Error handling
         while True:
             try:
                 menuChoice = int(input("Please enter an option: "))
-
             except ValueError as err:
                 print("Oops! That was not a valid number. Please try again...")
                 continue
-
-            if (menuChoice < 1 or menuChoice > 9):
+            if (menuChoice < 1 or menuChoice > 12):
                 print("Invalid option. Please try again...")
             else:
                 break
