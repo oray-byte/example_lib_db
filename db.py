@@ -111,7 +111,7 @@ def getMenuChoice(minChoice: int, maxChoice: int) -> int:
     return menuChoice
 
 # Quick method I threw together to check errors for integer input (makes sure they can be casted to ints)
-def getIntInput(sentence: str):
+def getIntInput(sentence: str) -> int:
     input: int = -1
     while True:
         try:
@@ -127,6 +127,7 @@ def printToMenu() -> None:
     print(formatLeft.format(" "))
     input(formatLeft.format("Press 'enter' to go back to menu"))
     print(("-" * displayLength) + "\n")
+
 """
     Name: optionONE()
     Description: Handles functionality for option one
@@ -484,6 +485,7 @@ def optionNINE() -> None:
     bookStock: int = -1
     checkoutUpdate: str = ""
     dueDate = None
+    date: datetime = None
     
     print("-" * displayLength)
     print(formatCenter.format("**** Checkout book ****"))
@@ -504,18 +506,19 @@ def optionNINE() -> None:
         return
     
     bookStock = rows[0][1] - 1
-    dueDate = todayDate + timedelta(days=14)
-    
+    dueDate = (todayDate + timedelta(days=14))
+    date = datetime(dueDate.year, dueDate.month, dueDate.day)
+    # date = date.strftime("%Y-%m-%d")
     userID = getID("user ID")
     
     checkoutInsertion = (
                         "INSERT INTO checkout "
-                        "VALUES (%s, %s, %s)"%(userID, bookISBN, dueDate)
+                        "VALUES (%s, %s, '%s')"%(userID, bookISBN, dueDate)
                         )
     try:
         cursor.execute(checkoutInsertion)
         cnx.commit()
-    except mysql.connector.errors.IntegrityError:
+    except mysql.connector.errors.IntegrityError as err:
         print(formatLeft.format("You already have the book of ISBN {id} checked out".format(id=bookISBN)))
         printToMenu()
         return
@@ -549,6 +552,7 @@ def optionTEN() -> None:
     userID: int = -1
     returnUpdate: str = ""
     bookStock: int = -1
+    date: datetime = None
     
     print("-" * 60)
     print(formatCenter.format("**** Return book ****"))
@@ -570,11 +574,13 @@ def optionTEN() -> None:
     print(formatLeft.format(" "))
     print(formatCenter.format("**** Checked out books ****"))
     for (title, fname, lname, isbn, pub_date, due_date, stock) in rows:
+            # Format due_date
+            date = datetime(due_date.year, due_date.month, due_date.day).strftime("%m/%d/%Y")
             print(formatLeft.format("Title: {tit}".format(tit=title)))
             print(formatLeft.format("Author name: {ln}, {fn}".format(ln=lname, fn=fname)))
             print(formatLeft.format("ISBN: {id}".format(id=isbn)))
             print(formatLeft.format("Publication date: {date}".format(date=pub_date)))
-            print(formatLeft.format("Due date: {ddate}".format(ddate=due_date)))
+            print(formatLeft.format("Due date: {ddate}".format(ddate=date)))
             print(formatLeft.format(" "))
             checkedOutBooks[isbn] = stock
             
@@ -808,7 +814,7 @@ def optionSIXTEEN() -> None:
     bookPubDate = getIntInput("Enter new book publication date (year): ")
     while bookStock < 0:
         bookStock = getIntInput("Enter the amount of quantity of new book: ")
-    bookLocation = "Aisle " + getIntInput("Enter the new book aisle number : ")
+    bookLocation = "Aisle " + str(getIntInput("Enter the new book aisle number : "))
     
      # SQL insertion of author, fname and lname
     add_author = ("INSERT INTO authors "
@@ -1024,7 +1030,8 @@ input_handler = {
 if __name__ == "__main__":
     # clearConsole()
     while True:
-        clearConsole() 
+        clearConsole()
+        clearConsole()
         # Useful documenation about Python string formatting: https://docs.python.org/3/library/string.html and https://www.w3schools.com/python/ref_string_format.asp
         print("-" * displayLength)
         print(formatCenter.format("**** Library Menu ****"))
