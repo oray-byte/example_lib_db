@@ -51,22 +51,20 @@ def clearConsole() -> None:
     else:
         os.system("clear")
 
-# Handles stock when a user is deleted
+# Handles stock when a user is deleted and room reservation
 def onUserDelete(id: int) -> None:
     bookQuery: str = ""
     clearDeletion: str = ""
-    queryList: List[int, str] = []
     rows: List[Tuple[str]] = []
     outstandingBooks: TypedDict[str, int] = {}
     
     bookQuery = (
                 "SELECT B.isbn, B.stock "
                 "FROM users AS U, checkout AS CO, books as B "
-                "WHERE U.uid = CO.c_uid and U.uid = %s and CO.c_isbn = B.isbn"
+                "WHERE U.uid = CO.c_uid and U.uid = %s and CO.c_isbn = B.isbn"%(id)
                 )
 
-    queryList.append(id)
-    cursor.execute(bookQuery, queryList)
+    cursor.execute(bookQuery)
     rows = cursor.fetchall()
     
     for (isbn, stock) in rows:
@@ -79,7 +77,6 @@ def onUserDelete(id: int) -> None:
                         "WHERE isbn = %s"%((outstandingBooks[isbn] + 1), isbn)
                         )
         cursor.execute(clearDeletion)
-        
 
 # Error handling for input involving integer ids
 def getID(type: str) -> int:
@@ -307,7 +304,6 @@ def optionFIVE() -> None:
 """  
 def optionSIX() -> None:
     bookISBN: str = ""
-    queryList: List[str] = []
     bookQuery: str = ""
     rows: List[Tuple[str]] = []
     
@@ -324,16 +320,16 @@ def optionSIX() -> None:
             continue
         break
     print(formatLeft.format("Checking to see if a book with ISBN " + bookISBN + " exists..."))
-    queryList.append(bookISBN)
+    print(formatLeft.format(" "))
 
     #SQL query show book-ISBN, booktitle, book-author, book-quantityinstock, book-location
     bookQuery = (
             "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location "
             "FROM books AS B, authors AS A "
-            "WHERE B.baid = A.aid and %s = B.isbn and B.stock > 0"
+            "WHERE B.baid = A.aid and %s = B.isbn and B.stock > 0"%(bookISBN)
             )
     
-    cursor.execute(bookQuery, queryList)
+    cursor.execute(bookQuery)
     rows = cursor.fetchall()
     
     if (len(rows) == 0):
@@ -359,7 +355,6 @@ def optionSIX() -> None:
 def optionSEVEN() -> None:
     # Variables used in this method
     userID: int = -1
-    queryList: List[int] = []
     bookQuery: str = ""
     rows: List[Tuple[str]] = []
     date: datetime = None
@@ -370,13 +365,12 @@ def optionSEVEN() -> None:
     print(formatLeft.format('To check if a book is due, please enter in userID.'))
     userID = getID("user ID")
     
-    queryList.append(userID)
     bookQuery = (
         "SELECT CO.due_date, B.title "
         "FROM users AS U, checkout AS CO, books as B "
-        "WHERE U.uid = CO.c_uid and U.uid = %s and CO.c_isbn = B.isbn"
+        "WHERE U.uid = CO.c_uid and U.uid = %s and CO.c_isbn = B.isbn"%(userID)
         )
-    cursor.execute(bookQuery, queryList)
+    cursor.execute(bookQuery)
     rows = cursor.fetchall()
     
     if (len(rows) == 0):
@@ -403,7 +397,6 @@ def optionSEVEN() -> None:
 """  
 def optionEIGHT() -> None:
     # Come back and tidy. Also, comment
-    queryList = []
     outerQuery = ("")
     # Used if user is looking up by date
     temp = None
@@ -416,41 +409,37 @@ def optionEIGHT() -> None:
 
     if (menuChoice == 1):
         temp = getpass(prompt=formatLeft.format("Please enter the title of the book you are looking for: "))
-        queryList.append(temp)
         outerQuery = (
                     "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
                     "FROM books AS B, authors AS A "
-                    "WHERE B.baid = A.aid and %s = B.title and B.stock > 0"
+                    "WHERE B.baid = A.aid and %s = B.title and B.stock > 0"%(temp)
                     )
     elif (menuChoice == 2):
         temp = getpass(prompt=formatLeft.format("Please enter the author of the book of which you are looking for: "))
-        queryList.append(temp.split(' ')[0])
-        queryList.append(temp.split(' ')[1])
         outerQuery = (
                     "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
                     "FROM books AS B, authors AS A "
-                    "WHERE B.baid = A.aid and %s = A.afname and %s = A.alname and B.stock > 0"
+                    "WHERE B.baid = A.aid and %s = A.afname and %s = A.alname and B.stock > 0"%(temp.split(' ')[0], temp.split(' ')[1])
                     )
     elif (menuChoice == 3):
-        temp = getpass(prompt=formatLeft.format("Please enter the publication date of the book of which you are looking for: "))
-        queryList.append(temp)
-        print(formatLeft.format("1) Greater than {date}".format(date=queryList[0])))
-        print(formatLeft.format("2) Less than {date}".format(date=queryList[0])))
+        temp = getIntInput("Please enter the publication date of the book of which you are looking for: ")
+        print(formatLeft.format("1) Greater than {date}".format(date=temp)))
+        print(formatLeft.format("2) Less than {date}".format(date=temp)))
         menuChoice = getMenuChoice(1, 2)
         if (menuChoice == 1):
             outerQuery = (
                         "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
                         "FROM books AS B, authors AS A "
-                        "WHERE B.baid = A.aid and B.pub_date >= %s and B.stock > 0"
+                        "WHERE B.baid = A.aid and B.pub_date >= %s and B.stock > 0"%(temp)
                         )
         elif (menuChoice == 2):
             outerQuery = (
                         "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
                         "FROM books AS B, authors AS A "
-                        "WHERE B.baid = A.aid and B.pub_date < %s and B.stock > 0"
+                        "WHERE B.baid = A.aid and B.pub_date < %s and B.stock > 0"%(temp)
                         )
             
-    cursor.execute(outerQuery, queryList)
+    cursor.execute(outerQuery)
     rows = cursor.fetchall()
     
     print(formatLeft.format(" "))
@@ -487,7 +476,6 @@ def optionEIGHT() -> None:
 """  
 def optionNINE() -> None:
     # Variables used in this method
-    queryList: Tuple[str, int] = []
     rows: List[Tuple[str]] = []
     bookQuery: str = ""
     checkoutInsertion: str = ""
@@ -502,13 +490,12 @@ def optionNINE() -> None:
     while len(bookISBN) != 13:
         bookISBN = getpass(prompt=formatLeft.format("Please enter the ISBN of the book you are wishing to check out: "))
     
-    queryList.append(bookISBN)
     bookQuery = (
                 "SELECT B.isbn, B.stock "
                 "FROM books as B "
-                "WHERE B.isbn = %s and B.stock > 0"
+                "WHERE B.isbn = %s and B.stock > 0"%(bookISBN)
                 )
-    cursor.execute(bookQuery, queryList)
+    cursor.execute(bookQuery)
     rows = cursor.fetchall()
     
     if (len(rows) == 0):
@@ -520,32 +507,26 @@ def optionNINE() -> None:
     dueDate = todayDate + timedelta(days=14)
     
     userID = getID("user ID")
-    queryList.insert(0, userID)
-    queryList.append(dueDate)
     
     checkoutInsertion = (
                         "INSERT INTO checkout "
-                        "VALUES (%s, %s, %s)"
+                        "VALUES (%s, %s, %s)"%(userID, bookISBN, dueDate)
                         )
     try:
-        cursor.execute(checkoutInsertion, queryList)
+        cursor.execute(checkoutInsertion)
         cnx.commit()
     except mysql.connector.errors.IntegrityError:
         print(formatLeft.format("You already have the book of ISBN {id} checked out".format(id=bookISBN)))
         printToMenu()
         return
 
-    queryList.remove(userID)
-    queryList.remove(dueDate)
-    queryList.insert(0, bookStock)
-    
     checkoutUpdate = (
                      "UPDATE books "
                      "SET stock = %s "
-                     "WHERE isbn = %s"
+                     "WHERE isbn = %s"%(bookStock, bookISBN)
                      )
     
-    cursor.execute(checkoutUpdate, queryList)
+    cursor.execute(checkoutUpdate)
     cnx.commit()
     
     printToMenu()
@@ -560,7 +541,6 @@ def optionNINE() -> None:
 """  
 def optionTEN() -> None:
     # Variables used in this method
-    queryList: List[str, int] = []
     rows: List[Tuple[str]] = []
     checkedOutBooks: List[str] = {}
     checkoutQuery: str = ""
@@ -574,13 +554,12 @@ def optionTEN() -> None:
     print(formatCenter.format("**** Return book ****"))
     print(formatLeft.format("To return a book, please enter your ID to see list of outstanding checkouts"))
     userID = getID("user ID")
-    queryList.append(userID)
     checkoutQuery = (
                 "SELECT B.title, A.afname, A.alname, B.isbn, B.pub_date, CO.due_date, B.stock "
                 "FROM checkout as CO, books as B, authors as A "
-                "WHERE CO.c_uid = %s and CO.c_isbn = B.isbn and B.baid = A.aid"
+                "WHERE CO.c_uid = %s and CO.c_isbn = B.isbn and B.baid = A.aid"%(userID)
                 )
-    cursor.execute(checkoutQuery, queryList)
+    cursor.execute(checkoutQuery)
     rows = cursor.fetchall()
     
     if (len(rows) == 0):
@@ -603,23 +582,20 @@ def optionTEN() -> None:
         bookISBN = getpass(prompt=formatLeft.format("Please enter the ISBN of the book you are wishing to return: "))
     
     bookStock = checkedOutBooks[bookISBN] + 1
-    queryList.append(bookISBN)
     checkoutDeletion = (
                         "DELETE FROM checkout "
-                        "WHERE c_uid = %s and c_isbn = %s"
+                        "WHERE c_uid = %s and c_isbn = %s"%(userID, bookISBN)
                        )
     
-    cursor.execute(checkoutDeletion, queryList)
+    cursor.execute(checkoutDeletion)
     cnx.commit()
     
-    queryList.remove(userID)
-    queryList.insert(0, bookStock)
     returnUpdate = (
                    "UPDATE books "
                    "SET stock = %s "
-                   "WHERE isbn = %s"
+                   "WHERE isbn = %s"%(bookStock, bookISBN)
                    )
-    cursor.execute(returnUpdate, queryList)
+    cursor.execute(returnUpdate)
     cnx.commit()
     
     printToMenu()
@@ -635,7 +611,6 @@ def optionTEN() -> None:
 def optionELEVEN() -> None:
     # Variables used in this method
     roomNumber: int = -1
-    queryList: List[int] = []
     roomQuery: str = ""
     userID: int = -1
     roomInsertion: str = ""
@@ -644,13 +619,12 @@ def optionELEVEN() -> None:
     print(formatCenter.format("**** Reserve room ****"))
     print(formatLeft.format("To reserve a room, you must provide the room number"))
     roomNumber = getID("room number")
-    queryList.append(roomNumber)
     roomQuery = (
                 "SELECT * "
                 "FROM roomuse AS RU "
-                "WHERE r_room_num = %s"
+                "WHERE r_room_num = %s"%(roomNumber)
                 )
-    cursor.execute(roomQuery, queryList)
+    cursor.execute(roomQuery)
     rows = cursor.fetchall()
     
     if (len(rows) > 0):
@@ -660,13 +634,12 @@ def optionELEVEN() -> None:
     
     print(formatLeft.format("Enter your userID to reserve room {rnum}".format(rnum=roomNumber)))
     userID = getID("user ID")
-    queryList.insert(0, userID)
     
     roomInsertion = (
                     "INSERT INTO roomuse "
-                    "VALUES (%s, %s)"
+                    "VALUES (%s, %s)"%(userID, roomNumber)
                     )
-    cursor.execute(roomInsertion, queryList)
+    cursor.execute(roomInsertion)
     cnx.commit()
     
     printToMenu()
@@ -682,7 +655,6 @@ def optionELEVEN() -> None:
 def optionTWELVE() -> None:
     # Variables used in this method
     userID: int = -1
-    queryList: List[int] = []
     roomQuery: str = ""
     rows: List[Tuple[str]] = []
     reservedRooms: List[int] = []
@@ -693,17 +665,15 @@ def optionTWELVE() -> None:
     print(formatCenter.format("**** End reservation ****"))
     print(formatLeft.format("Please enter user ID to see currently reserved rooms"))
     userID = getID("user ID")
-    queryList.append(userID)
     
     roomQuery = (
                 "SELECT * "
                 "FROM roomuse AS RU "
-                "WHERE RU.r_uid = %s"
+                "WHERE RU.r_uid = %s"%(userID)
                 )
     
-    cursor.execute(roomQuery, queryList)
+    cursor.execute(roomQuery)
     rows = cursor.fetchall()
-    queryList.pop()
     
     if (len(rows) == 0):
         print(formatLeft.format("You do not have any currently reserved rooms"))
@@ -719,13 +689,12 @@ def optionTWELVE() -> None:
     while roomNumber not in reservedRooms:
         roomNumber = getID("room number")
     
-    queryList.append(roomNumber)
     reservationDeletion = (
                           "DELETE FROM roomuse "
-                          "WHERE r_room_num = %s"
+                          "WHERE r_room_num = %s"%(roomNumber)
                           )
     
-    cursor.execute(reservationDeletion, queryList)
+    cursor.execute(reservationDeletion)
     cnx.commit()
     
     printToMenu()
@@ -768,20 +737,18 @@ def optionTHIRTEEN() -> None:
     Summary: Allows user to delete another user by entering uid
 """  
 def optionFOURTEEN() -> None:
-    queryList = []
     print("-" * displayLength)
     print(formatCenter.format('**** Deleting user ****'))
     uid = int(getpass(prompt=formatLeft.format("Enter userID: ")))
-    queryList.append(uid)
     
     # SQL deletion of a user
     delete_user = (
                 "DELETE FROM users "
-                "WHERE uid = %s "
+                "WHERE uid = %s"%(uid)
                 )
     # delete user
     onUserDelete(uid)
-    cursor.execute(delete_user, queryList)
+    cursor.execute(delete_user)
     
     
     printToMenu()
@@ -877,21 +844,19 @@ def optionSIXTEEN() -> None:
     Summary: Allows user to remove all books from the library given an isbn
 """  
 def optionSEVENTEEN() -> None:
-    queryList = []
     bookISBN: str = ""
     print("-" * displayLength)
     print(formatCenter.format('**** Deleting book ****'))
     while len(bookISBN) != 13:
         bookISBN = getpass(prompt=formatLeft.format("Enter bookISBN: "))
-    queryList.append(bookISBN)
     
     #SQL deletion of a book
     delete_book = (
                 "DELETE FROM books "
-                "WHERE isbn = %s "
+                "WHERE isbn = %s"%(bookISBN)
                 )
     # delete book
-    cursor.execute(delete_book, queryList)
+    cursor.execute(delete_book)
     
     
     printToMenu()
@@ -941,15 +906,13 @@ def optionEIGHTTEEN() -> None:
 """  
 def optionNINETEEN() -> None:
     print("-" * displayLength)
-    queryList = []
     print(formatCenter.format('**** Get User ID for family member ****'))
     familyPhone = getID("phone number")
-    queryList.append(familyPhone)
     
     outerQuery = ("SELECT * "
                   "FROM familymembers "
-                  "WHERE fam_phone = %s")
-    cursor.execute(outerQuery, queryList)
+                  "WHERE fam_phone = %s"%(familyPhone))
+    cursor.execute(outerQuery)
     rows = cursor.fetchall()
 
     # Check to see if there are no returned rows
@@ -971,34 +934,29 @@ def optionNINETEEN() -> None:
 """  
 def optionTWENTY() -> None:
     print("-" * displayLength)
-    queryList = []
     print(formatCenter.format('**** Add family member ****'))
     famPhoneNum = getID("phone number")
     famID = getID("user ID: ")
-    queryList.append(famID)
     
     #Check that user with famID exists"
     check_user = (
                 "SELECT uid "
                 "FROM users "
-                "WHERE uid = %s"
+                "WHERE uid = %s"%(famID)
                 )
-    cursor.execute(check_user, queryList)
+    cursor.execute(check_user)
     rows = cursor.fetchall()
     
     if (len(rows) == 0):
         print(formatLeft.format("There is no user with this user ID."))
     else:
-        queryList = []
-        queryList.append(famPhoneNum)
-        queryList.append(famID)
         #SQL addition of a family member
         add_familyMember = (
                     "INSERT INTO familymembers "
-                    "VALUES (%s, %s) "
+                    "VALUES (%s, %s)"%(famPhoneNum, famID)
                     )
         # add family member
-        cursor.execute(add_familyMember, queryList)
+        cursor.execute(add_familyMember)
         print(formatLeft.format("Family member successfully added."))
     
     printToMenu()
@@ -1011,19 +969,17 @@ def optionTWENTY() -> None:
     Summary: Removes family member from library database
 """  
 def optionTWENTYONE() -> None:
-    queryList = []
     print("-" * displayLength)
     print(formatCenter.format('**** Remove family member ****'))
     famPhoneNum = getID("phone number")
-    queryList.append(famPhoneNum)
     
     #SQL deletion of a family member
     delete_familyMember = (
                 "DELETE FROM familymembers "
-                "WHERE fam_phone = %s "
+                "WHERE fam_phone = %s"%(famPhoneNum)
                 )
     # delete family member
-    cursor.execute(delete_familyMember, queryList)
+    cursor.execute(delete_familyMember)
     
     
     printToMenu()
@@ -1066,9 +1022,9 @@ input_handler = {
 }
 
 if __name__ == "__main__":
-    clearConsole()
+    # clearConsole()
     while True:
-        # clearConsole() 
+        clearConsole() 
         # Useful documenation about Python string formatting: https://docs.python.org/3/library/string.html and https://www.w3schools.com/python/ref_string_format.asp
         print("-" * displayLength)
         print(formatCenter.format("**** Library Menu ****"))
