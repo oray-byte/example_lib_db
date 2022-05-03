@@ -1,48 +1,91 @@
 # MySQL API
 # MySQL API Documentation: https://dev.mysql.com/doc/connector-python/en/
 from getpass import getpass
-from time import strptime
 from typing import List, Tuple, TypedDict
 from datetime import datetime, timedelta
 from datetime import date
 import mysql.connector
 import mysql.connector.cursor
 import os
+import json
 
 
 # Debugging purposes
 connecting = True
+
+# Current date
+todayDate = datetime(date.today().year, date.today().month, date.today().day)
 
 # For formatting output
 displayLength = 80
 formatCenter = "| {:^76} |"
 formatLeft = "| {:<76} |"
 
-# Current date
-todayDate = datetime(date.today().year, date.today().month, date.today().day)
+# For database connection
+cnx: mysql.connector = None
+
+def databaseConnection() -> mysql.connector:
+    userInput: str = ""
+    pathToConfig: str = os.path.join(os.getcwd(), "config.json")
+    user: str = ""
+    password: str = ""
+    host: str = ""
+    database: str = ""
+    
+    if (os.path.exists(pathToConfig)):
+        while True:
+            userInput = input("Would you like to use your saved login info (y/n): ")
+            if (userInput.lower() == "y"):
+                with open("config.json", "r") as openfile:
+                    jsonObject = json.load(openfile)
+                    user = jsonObject["username"]
+                    password = jsonObject["password"]
+                    host = jsonObject["host"]
+                    database = jsonObject["database"]
+                    return mysql.connector.connect(user=user, password=password, host=host, database=database)
+            elif (userInput.lower() == "n"):
+                break
+            else:
+                print("Please enter valid response")
+                continue
+    
+    user = input("Enter username: ")
+    password = getpass("Enter password: ")
+    host = input("Enter host: ")
+    database = input("Enter database: ")
+    
+    while True: 
+        userInput = input("Would you like to save your login information (y/n): ")
+        print(userInput.lower())
+        if (userInput.lower() == "y"):
+            jsonData = {
+                "username": user,
+                "password": password,
+                "host": host,
+                "database": database
+            }
+            jsonObject = json.dumps(jsonData, indent=4)
+            with open("config.json", "w") as outfile:
+                outfile.write(jsonObject)
+            break
+        elif (userInput.lower() == "n"):
+            break
+        else:
+            print("Please enter valid response")
+            continue
+            
+    return mysql.connector.connect(user=user, password=password, host=host, database=database)
 
 print("Connecting to database...\n")
 
 # Method to connect to MySQL server
 # See https://dev.mysql.com/doc/connector-python/en/connector-python-connectargs.html for list of arguements
-
 if connecting:
-    while True:
-        try:
-            cnx: mysql.connector = mysql.connector.connect(user=input("Enter username: "), password=getpass(prompt="Enter password: "), host=input("Enter host: "), database=input("Enter database name: "), autocommit=True)
-        except mysql.connector.Error as err:
-            if (err.errno == 1045):
-                print("You entered a wrong username or password, please try again")
-                continue
-            if (err.errno == 1130):
-                print("You entered the wrong host, please try again")
-                continue
-        break
+    cnx = databaseConnection()
+    cursor: mysql.connector.cursor = cnx.cursor()
 
 # curser() instantiates objects that can execute operations such as SQL statements. Interacts with MySQL server through MySQLConnection object
 # Visit https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor.html for full documentation
-if connecting:
-    cursor: mysql.connector.cursor = cnx.cursor()
     
 # Clears console
 def clearConsole() -> None:
@@ -685,7 +728,8 @@ def optionTWELVE() -> None:
         print(formatLeft.format("You do not have any currently reserved rooms"))
         printToMenu()
         return
-        
+    
+    print(formatLeft.format(" "))
     print(formatCenter.format("**** Currently reserved rooms ****"))
     for (_r_uid, r_room_num) in rows:
         print(formatLeft.format("Room {num}".format(num=r_room_num)))
