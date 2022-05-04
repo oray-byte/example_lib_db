@@ -456,14 +456,14 @@ def optionEIGHT() -> None:
         outerQuery = (
                     "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
                     "FROM books AS B, authors AS A "
-                    "WHERE B.baid = A.aid and %s = B.title and B.stock > 0"%(temp)
+                    "WHERE B.baid = A.aid and B.title = '%s' and B.stock > 0"%(temp)
                     )
     elif (menuChoice == 2):
         temp = getpass(prompt=formatLeft.format("Please enter the author of the book of which you are looking for: "))
         outerQuery = (
                     "SELECT B.title, A.afname, A.alname, B.isbn, B.stock, B.location, B.pub_date "
                     "FROM books AS B, authors AS A "
-                    "WHERE B.baid = A.aid and %s = A.afname and %s = A.alname and B.stock > 0"%(temp.split(' ')[0], temp.split(' ')[1])
+                    "WHERE B.baid = A.aid and A.afname = '%s' and A.alname = '%s' and B.stock > 0"%(temp.split(' ')[0], temp.split(' ')[1])
                     )
     elif (menuChoice == 3):
         temp = getIntInput("Please enter the publication date of the book of which you are looking for: ")
@@ -661,35 +661,46 @@ def optionELEVEN() -> None:
     # Variables used in this method
     roomNumber: int = -1
     roomQuery: str = ""
+    availableRooms: List[int] = []
     userID: int = -1
     roomInsertion: str = ""
     
     print("-" * displayLength)
     print(formatCenter.format("**** Reserve room ****"))
     print(formatLeft.format("To reserve a room, you must provide the room number"))
-    roomNumber = getID("room number")
     roomQuery = (
                 "SELECT * "
-                "FROM roomuse AS RU "
-                "WHERE r_room_num = %s"%(roomNumber)
+                "FROM rooms AS R "
+                "WHERE R.room_num NOT IN (SELECT RU.r_room_num FROM roomuse as RU)"
                 )
     cursor.execute(roomQuery)
     rows = cursor.fetchall()
     
-    if (len(rows) > 0):
-        print(formatLeft.format("Room {num} is already reserved, please try a different room".format(num=roomNumber)))
-        printToMenu()
-        return
+    for (room_num, floor) in rows:
+        availableRooms.append(room_num)
+        print(formatLeft.format("Room {num} is available on floor {flr}".format(num=room_num, flr=floor)))
     
+    roomNumber = getID("room number")
+    while roomNumber not in availableRooms:
+        print(formatLeft.format("Room {num} is unavailable, please try a different room".format(num=roomNumber)))
+        roomNumber = getID("room number")
+        
+    print(formatLeft.format(" "))
     print(formatLeft.format("Enter your userID to reserve room {rnum}".format(rnum=roomNumber)))
     userID = getID("user ID")
     
-    roomInsertion = (
+    while True:
+        try:
+            roomInsertion = (
                     "INSERT INTO roomuse "
                     "VALUES (%s, %s)"%(userID, roomNumber)
                     )
-    cursor.execute(roomInsertion)
-    cnx.commit()
+            cursor.execute(roomInsertion)
+            cnx.commit()
+        except:
+            userID = getID("user ID")
+            continue
+        break
     
     printToMenu()
     
