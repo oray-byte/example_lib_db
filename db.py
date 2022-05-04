@@ -56,7 +56,6 @@ def databaseConnection() -> mysql.connector:
     
     while True: 
         userInput = input("Would you like to save your login information (y/n): ")
-        print(userInput.lower())
         if (userInput.lower() == "y"):
             jsonData = {
                 "username": user,
