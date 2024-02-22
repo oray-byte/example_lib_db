@@ -1,1 +1,1 @@
-# CS2300_Database
+# Not being hosted anymore
